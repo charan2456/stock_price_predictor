@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  # ─── PostgreSQL Database ───────────────────────
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: market_sentinel
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinel -d market_sentinel"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── FastAPI Backend ───────────────────────────
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://sentinel:sentinel@postgres:5432/market_sentinel
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
+      - MSE_ENV=default
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+      - ../logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── MLflow Tracking Server ────────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.0
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlflow-artifacts
+    volumes:
+      - mlflow-data:/mlflow-artifacts
+    restart: unless-stopped
+
+  # ─── React Frontend ────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  mlflow-data:

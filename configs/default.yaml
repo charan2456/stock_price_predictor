@@ -1,0 +1,156 @@
+# ──────────────────────────────────────────────
+#  Market Sentiment Intelligence Engine
+#  Default Configuration
+# ──────────────────────────────────────────────
+
+project:
+  name: "market-sentiment-engine"
+  version: "1.0.0"
+
+# ─── Data Ingestion ───────────────────────────
+
+data:
+  tickers: ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
+  lookback_days: 365
+  output_dir: "data"
+
+  reddit:
+    subreddits: ["stocks", "wallstreetbets", "investing"]
+    post_limit: 500
+    sort_by: "hot"  # hot, new, top
+
+  news:
+    feeds:
+      - name: "Reuters Business"
+        url: "https://feeds.reuters.com/reuters/businessNews"
+      - name: "Yahoo Finance"
+        url: "https://finance.yahoo.com/news/rssindex"
+      - name: "MarketWatch"
+        url: "http://feeds.marketwatch.com/marketwatch/topstories"
+    max_articles: 200
+
+  market:
+    interval: "1d"  # 1d, 1h, 5m
+    provider: "yfinance"
+
+# ─── Feature Engineering ─────────────────────
+
+features:
+  sentiment:
+    model: "ProsusAI/finbert"
+    batch_size: 32
+    max_length: 512
+    aggregation: "weighted_mean"  # mean, weighted_mean, median
+
+  technical_indicators:
+    - name: "rsi"
+      window: 14
+    - name: "macd"
+      fast: 12
+      slow: 26
+      signal: 9
+    - name: "bollinger_bands"
+      window: 20
+      std_dev: 2
+    - name: "sma"
+      windows: [5, 10, 20, 50]
+    - name: "ema"
+      windows: [12, 26]
+    - name: "atr"
+      window: 14
+    - name: "obv"
+    - name: "vwap"
+
+  lag_features:
+    price_lags: [1, 2, 3, 5, 10]
+    sentiment_lags: [1, 2, 3]
+    rolling_windows: [3, 5, 10, 20]
+
+# ─── Model Training ──────────────────────────
+
+training:
+  test_size: 0.2
+  validation_size: 0.1
+  random_state: 42
+  target: "next_day_return"  # next_day_return, next_day_direction, next_5day_return
+
+  lstm:
+    hidden_size: 128
+    num_layers: 2
+    dropout: 0.3
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 100
+    early_stopping_patience: 10
+    sequence_length: 30
+
+  xgboost:
+    n_estimators: 500
+    max_depth: 8
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 3
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    early_stopping_rounds: 20
+
+  ensemble:
+    method: "weighted"  # weighted, stacking, blending
+    weights:
+      lstm: 0.4
+      xgboost: 0.6
+    meta_learner: "ridge"  # For stacking: ridge, logistic
+
+# ─── MLflow ───────────────────────────────────
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "market-sentiment-engine"
+  registry_name: "sentiment-ensemble"
+  log_models: true
+  autolog: true
+
+# ─── Serving ──────────────────────────────────
+
+serving:
+  host: "0.0.0.0"
+  port: 8000
+  model_path: "models/artifacts/ensemble_latest"
+  cors_origins: ["*"]
+  rate_limit: 100  # requests per minute
+
+# ─── Backtesting ──────────────────────────────
+
+backtesting:
+  initial_capital: 100000
+  commission: 0.001  # 0.1%
+  slippage: 0.0005
+  position_size: 0.1  # 10% of portfolio per trade
+  benchmark: "SPY"
+  start_date: "2024-01-01"
+  end_date: "2024-12-31"
+
+# ─── Scheduling ───────────────────────────────
+
+scheduling:
+  enabled: true
+  cron_hour: "*"         # Every hour (hourly analysis)
+  cron_minute: 0
+  cron_day_of_week: "mon-fri"   # Weekdays only
+  timezone: "Asia/Kolkata"      # IST
+
+# ─── Database ─────────────────────────────────
+
+database:
+  url: "postgresql://sentinel:sentinel@localhost:5432/market_sentinel"
+
+# ─── Logging ──────────────────────────────────
+
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} | {message}"
+  rotation: "10 MB"
+  retention: "30 days"
+  log_dir: "logs"
+
