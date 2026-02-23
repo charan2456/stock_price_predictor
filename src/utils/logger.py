@@ -1,4 +1,4 @@
-"""Structured logging for Market Sentiment Intelligence Engine.
+"""Structured logging configuration.
 
 Uses loguru for structured, colorful, file-rotated logging with
 context injection for pipeline stage tracking.

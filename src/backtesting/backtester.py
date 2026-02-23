@@ -86,7 +86,7 @@ class Backtester:
             dates: Optional date series for trade logging.
 
         Returns:
-            BacktestResult with comprehensive performance metrics.
+            BacktestResult with performance metrics.
         """
         n_days = min(len(predictions), len(actual_returns))
         predictions = predictions[:n_days]

@@ -1,4 +1,4 @@
-"""Configuration management for Market Sentiment Intelligence Engine.
+"""Configuration management.
 
 Loads YAML config files with environment variable overrides and provides
 a typed, singleton configuration object used across all modules.

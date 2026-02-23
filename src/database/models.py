@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for the Market Sentinel platform.
+"""SQLAlchemy ORM models for the stock prediction platform.
 
 Tables:
   - prediction_runs       — Aggregate hourly run metadata

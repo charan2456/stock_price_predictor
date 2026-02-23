@@ -1,6 +1,6 @@
-"""FastAPI application — Market Sentinel Intelligence Engine.
+"""FastAPI application — Stock Price Predictor API.
 
-All endpoints for the world-class stock intelligence platform:
+All endpoints for the stock prediction platform:
 - /health, /search, /predictions/*, /sentiment/*, /backtest/*
 - /watchlist/*, /portfolio/*, /forecast/*, /calculator/*
 - /accuracy/*, /alerts/*, /scheduler/*, /model/*
@@ -104,7 +104,7 @@ class UserTickerAddRequest(BaseModel):
 async def _lifespan(app: FastAPI):
     global _model, _scheduler, _start_time
     _start_time = time.time()
-    logger.info("Starting Market Sentinel Intelligence Engine...")
+    logger.info("Starting Stock Price Predictor API...")
 
     init_db()
     logger.info("PostgreSQL database ready")
@@ -138,7 +138,7 @@ async def _lifespan(app: FastAPI):
 # ─── App ──────────────────────────────────────
 
 app = FastAPI(
-    title="Market Sentinel Intelligence Engine",
+    title="Stock Price Predictor API",
     description="AI-powered stock predictions with hourly analysis, multi-horizon forecasting, portfolio tracking, and smart alerts",
     version="2.0.0",
     lifespan=_lifespan,

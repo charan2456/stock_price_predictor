@@ -33,7 +33,7 @@ class Trainer:
         1. Load feature-engineered data
         2. Time-series aware train/val/test split
         3. Train ensemble model (LSTM + XGBoost)
-        4. Evaluate with comprehensive metrics
+        4. Evaluate with standard metrics
         5. Log everything to MLflow
         6. Save best model to registry
 
@@ -167,7 +167,7 @@ class Trainer:
     def _compute_metrics(
         self, y_true: np.ndarray, y_pred: np.ndarray
     ) -> dict[str, float]:
-        """Compute comprehensive evaluation metrics.
+        """Compute evaluation metrics.
 
         Args:
             y_true: Ground truth values.

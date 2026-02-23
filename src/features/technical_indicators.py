@@ -1,6 +1,6 @@
 """Technical indicator computation for market data.
 
-Computes a comprehensive set of technical indicators (RSI, MACD,
+Computes a a set of technical indicators (RSI, MACD,
 Bollinger Bands, SMA, EMA, ATR, OBV, VWAP) using the `ta` library.
 All indicators are configurable via YAML config.
 """
